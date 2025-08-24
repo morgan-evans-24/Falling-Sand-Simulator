@@ -1,13 +1,15 @@
 import pygame
 
 class GridCell(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, filled=False):
+    def __init__(self, x, y, gridX, gridY, size, sprite_group, filled=False):
         super().__init__()
+        self.add(sprite_group)
         self.size = size
         self.filled = filled
         self.image = pygame.Surface((size,size))
         self.rect = self.image.get_rect(topleft=(x,y))
-        self.position = (x,y)
+        self.screenPosition = (x,y)
+        self.gridPosition = (gridX, gridY)
         self.set_color()
 
     def set_color(self):

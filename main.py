@@ -1,5 +1,5 @@
 import sys
-
+import argparse
 import pygame
 
 from Grid import Grid
@@ -20,8 +20,7 @@ def main():
     running = True
     mouse_down = False
 
-    cell_color_at_current_time = pygame.Color(0)
-    cell_color_at_current_time.hsva = (0, 100, 100, 100)
+    cell_color_at_current_time = set_initial_color()
 
     while running:
         clock.tick(TICKS_PER_SECOND)
@@ -33,11 +32,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_down = False
         if mouse_down:
-            h, s, v, a = cell_color_at_current_time.hsva
-            h += 0.4
-            if h > 360:
-                h = 0
-            cell_color_at_current_time.hsva = (h, s, v, a)
+            determine_color(cell_color_at_current_time)
             mouse_x, mouse_y = pygame.mouse.get_pos()
             rel_x = mouse_x - MARGIN_X
             rel_y = mouse_y - MARGIN_Y
@@ -103,8 +98,33 @@ def simulation_step(grid):
 
     grid.enact_cell_states()
 
+def determine_color(cell_color_at_current_time):
+    if args.rainbow:
+        h, s, v, a = cell_color_at_current_time.hsva
+        h += 0.4
+        if h > 360:
+            h = 0
+        cell_color_at_current_time.hsva = (h, s, v, a)
+
+def set_initial_color():
+    color = pygame.Color(0)
+    if args.cell_color:
+        try:
+            color = args.cell_color
+            print(color)
+        except ValueError:
+            raise Exception("Invalid cell color")
+    else:
+        color = pygame.Color("#faf89d")
+    return color
+
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--cell-color", help="set cell color")
+    parser.add_argument("-r", "--rainbow", help="rainbow sand", action="store_true")
+    args = parser.parse_args()
+    print(args.cell_color, args.rainbow)
     SCREEN_WIDTH = 1200
     SCREEN_HEIGHT = 900
     BORDER_SIZE = 1

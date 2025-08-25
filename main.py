@@ -20,7 +20,10 @@ def main():
     running = True
     mouse_down = False
 
-    cell_color_at_current_time = set_initial_color()
+    frame_counter = 0
+    frames_per_update = max(1, int(TICKS_PER_SECOND/args.rainbow_speed))
+    current_hue=0
+    cell_color_at_current_time, current_hue = set_initial_color()
 
     while running:
         clock.tick(TICKS_PER_SECOND)
@@ -32,7 +35,8 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_down = False
         if mouse_down:
-            determine_color(cell_color_at_current_time)
+            frame_counter += 1
+            current_hue = determine_color(cell_color_at_current_time, frame_counter, frames_per_update, current_hue)
             mouse_x, mouse_y = pygame.mouse.get_pos()
             rel_x = mouse_x - MARGIN_X
             rel_y = mouse_y - MARGIN_Y
@@ -65,7 +69,7 @@ def init_grid():
 
     for logical_y in range(grid_height):
         for logical_x in range(grid_width):
-            grid.set_cell(logical_x, logical_y)
+            grid.set_cell(logical_x, logical_y, args.no_borders)
     return grid
 
 def draw_grid(grid_cells, screen):
@@ -98,33 +102,42 @@ def simulation_step(grid):
 
     grid.enact_cell_states()
 
-def determine_color(cell_color_at_current_time):
+def determine_color(cell_color_at_current_time, frame_counter, frames_per_update, current_hue):
     if args.rainbow:
-        h, s, v, a = cell_color_at_current_time.hsva
-        h += 0.4
-        if h > 360:
-            h = 0
-        cell_color_at_current_time.hsva = (h, s, v, a)
+        _, s, v, a = cell_color_at_current_time.hsva
+        if frame_counter % frames_per_update == 0:
+            current_hue += 0.5
+        if current_hue > 360:
+            current_hue = 0
+        cell_color_at_current_time.hsva = (current_hue, s, v, a)
+    return current_hue
 
 def set_initial_color():
-    color = pygame.Color(0)
     if args.cell_color:
         try:
-            color = args.cell_color
-            print(color)
+            color = pygame.Color(args.cell_color)
         except ValueError:
             raise Exception("Invalid cell color")
     else:
-        color = pygame.Color("#faf89d")
-    return color
+        if args.rainbow:
+            color = pygame.Color('#ff0000')
+        else:
+            color = pygame.Color("#faf89d")
+    current_hue = color.hsva[0]
+    return color, current_hue
 
 
 if __name__ == "__main__":
+    print()
+    print("=======================")
+    print("FALLING SAND SIMULATION")
+    print("=======================")
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--cell-color", help="set cell color")
     parser.add_argument("-r", "--rainbow", help="rainbow sand", action="store_true")
+    parser.add_argument("-rs", "--rainbow-speed", help="rainbow scroll rate, higher = faster (default 20)", type=float, default=20)
+    parser.add_argument("-nb", "--no-borders", help="disable cell borders", action="store_true")
     args = parser.parse_args()
-    print(args.cell_color, args.rainbow)
     SCREEN_WIDTH = 1200
     SCREEN_HEIGHT = 900
     BORDER_SIZE = 1

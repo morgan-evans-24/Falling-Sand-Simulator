@@ -10,11 +10,12 @@ class CellState(Enum):
     cell_slides_left_or_right = 6
 
 class GridCell(pygame.sprite.Sprite):
-    def __init__(self, x, y, grid_x, grid_y, size, sprite_group, filled=False):
+    def __init__(self, x, y, grid_x, grid_y, size, sprite_group, filled=False, no_borders=False):
         super().__init__()
         self.add(sprite_group)
         self.size = size
         self.filled = filled
+        self.no_borders = no_borders
         self.image = pygame.Surface((size,size))
         self.rect = self.image.get_rect(topleft=(x,y))
         self.screenPosition = (x,y)
@@ -30,6 +31,8 @@ class GridCell(pygame.sprite.Sprite):
 
         self.image.fill(color)
 
+        if self.no_borders:
+            return
         pygame.draw.rect(
             self.image,  # surface to draw on
             pygame.Color("#333333"),  # border color

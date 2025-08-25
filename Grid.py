@@ -23,9 +23,9 @@ class Grid:
     def set_cell_color(self, cell_color):
         self.cell_color = cell_color
 
-    def set_cell(self, x, y):
+    def set_cell(self, x, y, borders):
         screen_x, screen_y = self._calc_screen_coords(x, y, self.height)
-        cell = GridCell(screen_x, screen_y, x, y, self.CELL_SIZE, sprite_group=self.sprites, filled=False)
+        cell = GridCell(screen_x, screen_y, x, y, self.CELL_SIZE, sprite_group=self.sprites, filled=False, no_borders=borders)
         self.grid[y][x] = cell
 
     def _get_cell(self, x, y):
